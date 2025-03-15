@@ -1,46 +1,74 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 import yfinance as yf
+import plotly.graph_objects as go
 import streamlit as st
+import matplotlib.dates as mdates
+from datetime import datetime
 
-def fetch_nifty_data():
-    nifty = yf.download("^NSEI", start="2018-01-08", end="2025-03-10")
-    return nifty['Close']
+# Load planetary degree data from the Excel file
+df_planets = pd.read_excel('eph530n.xlsx')
 
-def load_planetary_data(uploaded_file):
-    df = pd.read_excel(uploaded_file, sheet_name=0)
-    
-    df['Date'] = pd.to_datetime(df['Date'], format="%d-%m-%Y")
-    
-    return df
+# Convert 'Date' column to datetime format
+df_planets['Date'] = pd.to_datetime(df_planets['Date'], format='%d-%m-%Y')
 
-def main():
-    st.title("Planetary Data and Nifty 50 Plot")
+# Get the current date (dynamic end date)
+end_date = datetime.today().strftime('%Y-%m-%d')
 
-    uploaded_file = st.file_uploader("Upload an Excel file with planetary data", type=["xlsx", "xls"])
-    
-    if uploaded_file is not None:
+# Streamlit interface
+st.title('Planetary Degrees and Nifty 50 Close Price')
 
-        df_planetary = load_planetary_data(uploaded_file)
+# Ask user whether to fetch daily or weekly data
+data_choice = st.radio('Select the frequency of Nifty 50 data:', ('Daily', 'Weekly'))
 
-        nifty_data = fetch_nifty_data()
+# Fetch Nifty 50 data from Yahoo Finance based on user input
+start_date = '2018-01-01'
 
-        nifty_data = nifty_data.loc[nifty_data.index >= df_planetary['Date'].min()]
-        
-        fig, ax1 = plt.subplots(figsize=(10, 6))
+if data_choice == 'Daily':
+    nifty_data = yf.download('^NSEI', start=start_date, end=end_date, multi_level_index=False)
+elif data_choice == 'Weekly':
+    nifty_data = yf.download('^NSEI', start=start_date, end=end_date, interval='1wk', multi_level_index=False)
 
-        ax1.set_xlabel('Date')
-        ax1.set_ylabel('Planetary Degrees', color='tab:blue')
-        ax1.plot(df_planetary['Date'], df_planetary['venus'], label='Venus', color='tab:blue')
-        ax1.plot(df_planetary['Date'], df_planetary['mercury'], label='Mercury', color='tab:orange')
-        ax1.plot(df_planetary['Date'], df_planetary['sun'], label='Sun', color='tab:red')
-        ax1.plot(df_planetary['Date'], df_planetary['saturn'], label='Saturn', color='tab:green')
-        ax1.plot(df_planetary['Date'], df_planetary['mars'], label='Mars', color='tab:purple')
-        ax1.plot(df_planetary['Date'], df_planetary['rahu'], label='Rahu', color='tab:brown')
-        ax1.tick_params(axis='y', labelcolor='tab:blue')
+# Ensure that the Nifty data index is a datetime type and matches the date format in df_planets
+nifty_data.index = pd.to_datetime(nifty_data.index)
 
-        ax2 = ax1.twinx()
-        ax2.set_ylabel('Nifty 50 Close Price', color='tab:gray')
-        ax2.plot(nifty_data.index, nifty_data.values, label='Nifty 50 Close', color='tab:gray')
-        ax2.tick_params(axis='y', labelcolor='tab:gray')
-        
+# If weekly data is selected, filter planetary data to match weekly dates
+if data_choice == 'Weekly':
+    df_planets = df_planets[df_planets['Date'].isin(nifty_data.index)]
+
+# Merge Nifty 50 close prices with the planetary data (on Date)
+df_planets = pd.merge(df_planets, nifty_data[['Close']], left_on='Date', right_index=True, how='left')
+
+# Display the dataframe in the app
+st.subheader('Planetary Data and Nifty 50 Close Prices')
+st.write(df_planets)
+
+# Plotting with Plotly for interactivity
+fig = go.Figure()
+
+# Plot planetary degrees as line plots
+fig.add_trace(go.Scatter(x=df_planets['Date'], y=df_planets['venus'], mode='lines', name='Venus', line=dict(color='blue')))
+fig.add_trace(go.Scatter(x=df_planets['Date'], y=df_planets['mercury'], mode='lines', name='Mercury', line=dict(color='green')))
+fig.add_trace(go.Scatter(x=df_planets['Date'], y=df_planets['sun'], mode='lines', name='Sun', line=dict(color='red')))
+fig.add_trace(go.Scatter(x=df_planets['Date'], y=df_planets['saturn'], mode='lines', name='Saturn', line=dict(color='purple')))
+fig.add_trace(go.Scatter(x=df_planets['Date'], y=df_planets['mars'], mode='lines', name='Mars', line=dict(color='orange')))
+fig.add_trace(go.Scatter(x=df_planets['Date'], y=df_planets['rahu'], mode='lines', name='Rahu', line=dict(color='brown')))
+
+# Add Nifty 50 Close Price as a secondary y-axis
+fig.add_trace(go.Scatter(x=df_planets['Date'], y=df_planets['Close'], mode='lines', name='Nifty 50 Close Price', line=dict(color='black'), yaxis='y2'))
+
+# Update layout to set up both axes properly
+fig.update_layout(
+    title=f'Planetary Degrees and Nifty 50 Close Prices ({data_choice} Data) from 01 Jan 2018 to {end_date}',
+    xaxis_title='Date',
+    yaxis_title='Planetary Degrees',
+    yaxis2=dict(
+        title='Nifty 50 Close Price',
+        overlaying='y',
+        side='right'
+    ),
+    legend=dict(x=0.01, y=0.99),
+    hovermode="x unified"
+)
+
+# Show plot in Streamlit app
+st.plotly_chart(fig)
