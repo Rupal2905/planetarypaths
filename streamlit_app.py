@@ -73,3 +73,4 @@ fig.update_layout(
 
 # Show plot in Streamlit app
 st.plotly_chart(fig)
+st.write(df_planets) 
