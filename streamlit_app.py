@@ -40,7 +40,7 @@ df_planets = pd.merge(df_planets, nifty_data[['Close']], left_on='Date', right_i
 
 # Display the dataframe in the app
 st.subheader('Planetary Data and Nifty 50 Close Prices')
-st.write(df_planets)
+
 
 # Plotting with Plotly for interactivity
 fig = go.Figure()
