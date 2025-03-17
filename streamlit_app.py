@@ -35,6 +35,9 @@ nifty_data.index = pd.to_datetime(nifty_data.index)
 if data_choice == 'Weekly':
     df_planets = df_planets[df_planets['Date'].isin(nifty_data.index)]
 
+if data_choice == 'Daily':
+    df_planets = df_planets[df_planets['Date'].isin(nifty_data.index)]
+
 # Merge Nifty 50 close prices with the planetary data (on Date)
 df_planets = pd.merge(df_planets, nifty_data[['Close']], left_on='Date', right_index=True, how='left')
 
