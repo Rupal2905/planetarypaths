@@ -11,10 +11,53 @@ df_planets = pd.read_excel('eph530n.xlsx')
 df_planets['Date'] = pd.to_datetime(df_planets['Date'], format='%d-%m-%Y')
 
 # Streamlit app interface
-st.title('Planetary Degrees and Nifty 50 OHLC Chart')
+st.title('Planetary Degrees and Nifty index OHLC Chart')
+
+index_options = {
+    'Nifty 50': '^NSEI',
+    'Nifty Next 50': '^NIFTYJR',
+    'Nifty 100': '^NIFTY100',
+    'Nifty 200': '^NIFTY200',
+    'Nifty 500': '^NIFTY500',
+    'Nifty Midcap 50': '^CNXMDCP50',
+    'Nifty Midcap 100': '^CNXMDCP100',
+    'Nifty Midcap 150': '^CNXMDCP150',
+    'Nifty Smallcap 50': '^CNXSMALLCAP50',
+    'Nifty Smallcap 100': '^CNXSMALLCAP100',
+    'Nifty Smallcap 250': '^CNXSMALLCAP250',
+    'Nifty LargeMidcap 250': '^CNXLARGEMIDCAP250',
+    'Nifty MidSmallcap 400': '^CNXMIDSMALLCAP400',
+    'Nifty Bank': '^NSEBANK',
+    'Nifty Financial Services': '^CNXFINANCE',
+    'Nifty IT': '^CNXIT',
+    'Nifty Metal': '^CNXMETAL',
+    'Nifty Pharma': '^CNXPHARMA',
+    'Nifty FMCG': '^CNXFMCG',
+    'Nifty Auto': '^CNXAUTO',
+    'Nifty Realty': '^CNXREALTY',
+    'Nifty Energy': '^CNXENERGY',
+    'Nifty Media': '^CNXMEDIA',
+    'Nifty Infra': '^CNXINFRA',
+    'Nifty PSU Bank': '^CNXPSUBANK',
+    'Nifty Private Bank': '^NIFTY_PRBANK',
+    'Nifty Consumer Durables': '^CNXCONSUMERDURABLES',
+    'Nifty Oil & Gas': '^CNXOILGAS',
+    'Nifty Healthcare': '^CNXHEALTHCARE',
+    'Nifty Telecom': '^CNXTELECOM',
+    'Nifty Commodities': '^CNXCOMMODITIES',
+    'Nifty CPSE': '^CNXCPSE',
+    'Nifty MNC': '^CNXMNC',
+    'Nifty PSE': '^CNXPSE',
+    'Nifty Services Sector': '^CNXSERVICES',
+    'Nifty GIFT Nifty': '^NIFTYIFSC'
+}
+
 
 # Sidebar: user inputs for date range
-st.sidebar.subheader("Select Date Range")
+st.sidebar.subheader("Select Index and Date Range")
+selected_index = st.sidebar.selectbox("Select Index", list(index_options.keys()))
+selected_symbol = index_options[selected_index]
+
 start_date = st.sidebar.date_input("Start Date", datetime(2018, 1, 1))
 end_date = st.sidebar.date_input("End Date", datetime.today())
 
@@ -34,7 +77,7 @@ interval = '1d' if data_choice == 'Daily' else '1wk'
 
 # Fetch Nifty 50 OHLC data
 nifty_data = yf.download(
-    '^NSEI',
+    selected_symbol,
     start=start_date.strftime('%Y-%m-%d'),
     end=end_date.strftime('%Y-%m-%d'),
     interval=interval, multi_level_index=False
@@ -49,9 +92,6 @@ if data_choice == 'Weekly':
 
 # Merge Close prices into planetary data for display purposes
 df_planets = pd.merge(df_planets, nifty_data[['Close']], left_on='Date', right_index=True, how='left')
-
-# Show table
-st.subheader('Planetary Data and Nifty 50 Close Prices')
 
 
 # Plotting
@@ -82,7 +122,7 @@ fig.add_trace(go.Candlestick(
 ))
 
 fig.update_layout(
-    title=f'Planetary Degrees and Nifty 50 Candlestick Chart ({data_choice} Data)',
+    title=f'Planetary Degrees and Nifty index Candlestick Chart ({data_choice} Data)',
     xaxis_title='Date',
     yaxis_title='Planetary Degrees',
     xaxis=dict(
@@ -90,7 +130,7 @@ fig.update_layout(
         type='date'
     ),
     yaxis2=dict(
-        title='Nifty 50 Price',
+        title='Price',
         overlaying='y',
         side='right',
         showgrid=False
@@ -102,3 +142,4 @@ fig.update_layout(
 
 # Show plot
 st.plotly_chart(fig)
+
