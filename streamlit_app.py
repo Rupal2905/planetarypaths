@@ -2,7 +2,6 @@ import pandas as pd
 import yfinance as yf
 import plotly.graph_objects as go
 import streamlit as st
-import matplotlib.dates as mdates
 from datetime import datetime
 
 # Load planetary degree data from the Excel file
@@ -11,66 +10,95 @@ df_planets = pd.read_excel('eph530n.xlsx')
 # Convert 'Date' column to datetime format
 df_planets['Date'] = pd.to_datetime(df_planets['Date'], format='%d-%m-%Y')
 
-# Get the current date (dynamic end date)
-end_date = datetime.today().strftime('%Y-%m-%d')
+# Streamlit app interface
+st.title('Planetary Degrees and Nifty 50 OHLC Chart')
 
-# Streamlit interface
-st.title('Planetary Degrees and Nifty 50 Close Price')
+# Sidebar: user inputs for date range
+st.sidebar.subheader("Select Date Range")
+start_date = st.sidebar.date_input("Start Date", datetime(2018, 1, 1))
+end_date = st.sidebar.date_input("End Date", datetime.today())
 
-# Ask user whether to fetch daily or weekly data
-data_choice = st.radio('Select the frequency of Nifty 50 data:', ('Daily', 'Weekly'))
+# Filter planetary data to match selected date range
+df_planets = df_planets[(df_planets['Date'] >= pd.to_datetime(start_date)) & (df_planets['Date'] <= pd.to_datetime(end_date))]
 
-# Fetch Nifty 50 data from Yahoo Finance based on user input
-start_date = '2018-01-01'
 
-if data_choice == 'Daily':
-    nifty_data = yf.download('^NSEI', start=start_date, end=end_date, multi_level_index=False)
-elif data_choice == 'Weekly':
-    nifty_data = yf.download('^NSEI', start=start_date, end=end_date, interval='1wk', multi_level_index=False)
+# Error handling: end date should be after start date
+if start_date > end_date:
+    st.sidebar.error("End date must be after start date.")
 
-# Ensure that the Nifty data index is a datetime type and matches the date format in df_planets
+# Sidebar: frequency selection
+data_choice = st.sidebar.radio('Select the frequency of Nifty 50 data:', ('Daily', 'Weekly'))
+
+# Determine interval based on selection
+interval = '1d' if data_choice == 'Daily' else '1wk'
+
+# Fetch Nifty 50 OHLC data
+nifty_data = yf.download(
+    '^NSEI',
+    start=start_date.strftime('%Y-%m-%d'),
+    end=end_date.strftime('%Y-%m-%d'),
+    interval=interval, multi_level_index=False
+)
+
+# Ensure index is datetime
 nifty_data.index = pd.to_datetime(nifty_data.index)
 
-# If weekly data is selected, filter planetary data to match weekly dates
+# Filter planetary data to match Nifty index dates if weekly
 if data_choice == 'Weekly':
     df_planets = df_planets[df_planets['Date'].isin(nifty_data.index)]
 
-
-# Merge Nifty 50 close prices with the planetary data (on Date)
+# Merge Close prices into planetary data for display purposes
 df_planets = pd.merge(df_planets, nifty_data[['Close']], left_on='Date', right_index=True, how='left')
 
-# Display the dataframe in the app
+# Show table
 st.subheader('Planetary Data and Nifty 50 Close Prices')
 
 
-# Plotting with Plotly for interactivity
+# Plotting
 fig = go.Figure()
 
-# Plot planetary degrees as line plots
-fig.add_trace(go.Scatter(x=df_planets['Date'], y=df_planets['venus'], mode='lines', name='Venus', line=dict(color='blue')))
-fig.add_trace(go.Scatter(x=df_planets['Date'], y=df_planets['mercury'], mode='lines', name='Mercury', line=dict(color='green')))
-fig.add_trace(go.Scatter(x=df_planets['Date'], y=df_planets['sun'], mode='lines', name='Sun', line=dict(color='red')))
-fig.add_trace(go.Scatter(x=df_planets['Date'], y=df_planets['saturn'], mode='lines', name='Saturn', line=dict(color='purple')))
-fig.add_trace(go.Scatter(x=df_planets['Date'], y=df_planets['mars'], mode='lines', name='Mars', line=dict(color='orange')))
-fig.add_trace(go.Scatter(x=df_planets['Date'], y=df_planets['rahu'], mode='lines', name='Rahu', line=dict(color='brown')))
+# Add planetary degrees
+planets = ['venus', 'mercury', 'sun', 'saturn', 'mars', 'rahu']
+colors = ['blue', 'green', 'red', 'purple', 'orange', 'brown']
 
-# Add Nifty 50 Close Price as a secondary y-axis
-fig.add_trace(go.Scatter(x=df_planets['Date'], y=df_planets['Close'], mode='lines', name='Nifty 50 Close Price', line=dict(color='black'), yaxis='y2'))
+for planet, color in zip(planets, colors):
+    fig.add_trace(go.Scatter(
+        x=df_planets['Date'],
+        y=df_planets[planet],
+        mode='lines',
+        name=planet.capitalize(),
+        line=dict(color=color)
+    ))
 
-# Update layout to set up both axes properly
+# Add candlestick plot for Nifty 50
+fig.add_trace(go.Candlestick(
+    x=nifty_data.index,
+    open=nifty_data['Open'],
+    high=nifty_data['High'],
+    low=nifty_data['Low'],
+    close=nifty_data['Close'],
+    name='Nifty 50',
+    yaxis='y2'
+))
+
 fig.update_layout(
-    title=f'Planetary Degrees and Nifty 50 Close Prices ({data_choice} Data) from 01 Jan 2018 to {end_date}',
+    title=f'Planetary Degrees and Nifty 50 Candlestick Chart ({data_choice} Data)',
     xaxis_title='Date',
     yaxis_title='Planetary Degrees',
+    xaxis=dict(
+        rangeslider=dict(visible=False),
+        type='date'
+    ),
     yaxis2=dict(
-        title='Nifty 50 Close Price',
+        title='Nifty 50 Price',
         overlaying='y',
-        side='right'
+        side='right',
+        showgrid=False
     ),
     legend=dict(x=0.01, y=0.99),
+    dragmode='zoom',
     hovermode="x unified"
 )
 
-# Show plot in Streamlit app
+# Show plot
 st.plotly_chart(fig)
-st.write(df_planets) 
