@@ -15,20 +15,7 @@ st.title('Planetary Degrees and Nifty index OHLC Chart')
 
 index_options = {
     'Nifty 50': '^NSEI',
-    'Nifty Next 50': '^NIFTYJR',
-    'Nifty 100': '^NIFTY100',
-    'Nifty 200': '^NIFTY200',
-    'Nifty 500': '^NIFTY500',
-    'Nifty Midcap 50': '^CNXMDCP50',
-    'Nifty Midcap 100': '^CNXMDCP100',
-    'Nifty Midcap 150': '^CNXMDCP150',
-    'Nifty Smallcap 50': '^CNXSMALLCAP50',
-    'Nifty Smallcap 100': '^CNXSMALLCAP100',
-    'Nifty Smallcap 250': '^CNXSMALLCAP250',
-    'Nifty LargeMidcap 250': '^CNXLARGEMIDCAP250',
-    'Nifty MidSmallcap 400': '^CNXMIDSMALLCAP400',
     'Nifty Bank': '^NSEBANK',
-    'Nifty Financial Services': '^CNXFINANCE',
     'Nifty IT': '^CNXIT',
     'Nifty Metal': '^CNXMETAL',
     'Nifty Pharma': '^CNXPHARMA',
@@ -39,17 +26,8 @@ index_options = {
     'Nifty Media': '^CNXMEDIA',
     'Nifty Infra': '^CNXINFRA',
     'Nifty PSU Bank': '^CNXPSUBANK',
-    'Nifty Private Bank': '^NIFTY_PRBANK',
-    'Nifty Consumer Durables': '^CNXCONSUMERDURABLES',
-    'Nifty Oil & Gas': '^CNXOILGAS',
-    'Nifty Healthcare': '^CNXHEALTHCARE',
-    'Nifty Telecom': '^CNXTELECOM',
-    'Nifty Commodities': '^CNXCOMMODITIES',
-    'Nifty CPSE': '^CNXCPSE',
     'Nifty MNC': '^CNXMNC',
     'Nifty PSE': '^CNXPSE',
-    'Nifty Services Sector': '^CNXSERVICES',
-    'Nifty GIFT Nifty': '^NIFTYIFSC'
 }
 
 
