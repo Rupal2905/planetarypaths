@@ -14,22 +14,35 @@ df_planets['Date'] = pd.to_datetime(df_planets['Date'], format='%d-%m-%Y')
 st.title('Planetary Degrees and Nifty index OHLC Chart')
 
 index_options = {
+    'Nifty 100': '^CNX100',
+    'Nifty 200': '^CNX200',
     'Nifty 50': '^NSEI',
-    'Nifty Bank': '^NSEBANK',
-    'Nifty IT': '^CNXIT',
-    'Nifty Metal': '^CNXMETAL',
-    'Nifty Pharma': '^CNXPHARMA',
-    'Nifty FMCG': '^CNXFMCG',
+    'Nifty 500': '^NIFTY500',
     'Nifty Auto': '^CNXAUTO',
-    'Nifty Realty': '^CNXREALTY',
+    'Nifty Bank': '^NSEBANK',
+    'Nifty Commodities': '^CNXCMDT',
+    'Nifty Consumer Durables': 'NIFTY_CONSR_DURBL',
+    'Nifty CPSE': 'NIFTYCPSE',
     'Nifty Energy': '^CNXENERGY',
+    'Nifty Financial Services': 'NIFTY_FIN_SERVICES',
+    'Nifty FMCG': '^CNXFMCG',
+    'Nifty Healthcare Index': 'NIFTY_HEALTHCARE',
+    'Nifty Infrastructure': '^CNXINFRA',
+    'Nifty IT': '^CNXIT',
     'Nifty Media': '^CNXMEDIA',
-    'Nifty Infra': '^CNXINFRA',
-    'Nifty PSU Bank': '^CNXPSUBANK',
+    'Nifty Metal': '^CNXMETAL',
+    'Nifty Microcap 250': 'NIFTY_MICROCAP250',
     'Nifty MNC': '^CNXMNC',
+    'Nifty Next 50': '^NSMIDCAP',
+    'Nifty Oil & Gas': 'NIFTY_OIL_AND_GAS',
+    'Nifty Pharma': '^CNXPHARMA',
+    'Nifty Private Bank': 'NIFTY_PVT_BANK',
     'Nifty PSE': '^CNXPSE',
+    'Nifty PSU Bank': '^CNXPSUBANK',
+    'Nifty Realty': '^CNXREALTY',
+    'Nifty Smallcap 100': '^CNXSC',
+    'Nifty Total Market': 'NIFTY_TOTAL_MKT',
 }
-
 
 # Sidebar: user inputs for date range
 st.sidebar.subheader("Select Index and Date Range")
