@@ -17,7 +17,7 @@ index_options = {
     'Nifty 100': '^CNX100',
     'Nifty 200': '^CNX200',
     'Nifty 50': '^NSEI',
-    'Nifty 500': '^NIFTY500',
+    'Nifty 500': '^CRSLDX',
     'Nifty Auto': '^CNXAUTO',
     'Nifty Bank': '^NSEBANK',
     'Nifty Commodities': '^CNXCMDT',
